@@ -1,0 +1,1303 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f4f2ec" />
+    <title>Framefind — photos, found</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --paper: #f4f2ec;
+        --white: #fffefa;
+        --ink: #20211f;
+        --muted: #73746f;
+        --line: #deddd5;
+        --accent: #d95d42;
+        --soft: #f5e5df;
+        --green: #55765d;
+        --serif: Georgia, "Times New Roman", serif;
+        --sans: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--sans);
+        -webkit-font-smoothing: antialiased;
+      }
+      button,
+      input {
+        font: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+      .shell {
+        width: min(1240px, calc(100% - 56px));
+        margin: 0 auto;
+      }
+      header {
+        height: 78px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        color: var(--ink);
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: 750;
+        letter-spacing: -0.04em;
+      }
+      .brand-mark {
+        width: 29px;
+        height: 29px;
+        display: grid;
+        place-items: center;
+        border: 1.5px solid var(--ink);
+        border-radius: 50%;
+        position: relative;
+      }
+      .brand-mark::before {
+        content: "";
+        width: 10px;
+        height: 10px;
+        border: 1.5px solid var(--accent);
+        border-radius: 50%;
+      }
+      .brand-mark::after {
+        content: "";
+        width: 2px;
+        height: 2px;
+        position: absolute;
+        top: 5px;
+        right: 4px;
+        background: var(--ink);
+        border-radius: 50%;
+      }
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .privacy-pill {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        border: 1px solid var(--line);
+        background: #faf9f5;
+        border-radius: 30px;
+        padding: 8px 12px;
+        color: #555650;
+      }
+      .privacy-pill svg {
+        width: 13px;
+        height: 13px;
+      }
+      main {
+        padding: 44px 0 56px;
+      }
+      .intro {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 28px;
+      }
+      .eyebrow {
+        margin: 0 0 9px;
+        color: var(--accent);
+        font-weight: 700;
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      h1 {
+        font: 400 clamp(34px, 4vw, 52px)/1.04 var(--serif);
+        letter-spacing: -0.045em;
+        margin: 0;
+      }
+      .intro-copy {
+        max-width: 300px;
+        margin: 0 0 4px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.65;
+      }
+      .workspace {
+        display: grid;
+        grid-template-columns: minmax(0, 1.18fr) minmax(340px, 0.82fr);
+        align-items: start;
+        border: 1px solid var(--line);
+        background: var(--white);
+      }
+      .panel {
+        min-width: 0;
+        padding: 26px 28px 30px;
+      }
+      .panel + .panel {
+        border-left: 1px solid var(--line);
+      }
+      .panel-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 20px;
+      }
+      .panel-kicker {
+        margin: 0 0 5px;
+        color: var(--muted);
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+      h2 {
+        font: 400 26px/1.15 var(--serif);
+        margin: 0;
+        letter-spacing: -0.025em;
+      }
+      .count {
+        flex: none;
+        border: 1px solid var(--line);
+        padding: 6px 9px;
+        font-size: 11px;
+        color: var(--muted);
+        border-radius: 2px;
+      }
+      .dropzone {
+        min-height: 150px;
+        border: 1px dashed #c8c5bc;
+        background: #faf9f5;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 20px;
+        transition:
+          border-color 0.18s,
+          background 0.18s;
+      }
+      .dropzone.dragging {
+        border-color: var(--accent);
+        background: var(--soft);
+      }
+      .upload-icon {
+        width: 30px;
+        height: 30px;
+        color: var(--accent);
+        margin-bottom: 9px;
+      }
+      .dropzone strong {
+        font-size: 13px;
+        font-weight: 650;
+      }
+      .dropzone span {
+        margin-top: 5px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .text-button {
+        color: var(--accent);
+        border: 0;
+        background: none;
+        padding: 0;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        font-weight: 650;
+      }
+      .subtle-note {
+        margin: 12px 0 0;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.5;
+      }
+      .gallery-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 28px 0 12px;
+      }
+      .gallery-head h3 {
+        margin: 0;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .plain-button {
+        border: 0;
+        background: none;
+        padding: 6px 0 6px 8px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .plain-button:hover {
+        color: var(--accent);
+      }
+      .gallery {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .photo-card {
+        position: relative;
+        overflow: hidden;
+        background: #efeee8;
+        aspect-ratio: 1.22;
+      }
+      .photo-card img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+      }
+      .photo-label {
+        position: absolute;
+        inset: auto 0 0;
+        display: flex;
+        justify-content: space-between;
+        gap: 6px;
+        padding: 18px 8px 7px;
+        color: white;
+        font-size: 9px;
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.62));
+      }
+      .photo-label span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .empty-gallery {
+        grid-column: 1/-1;
+        border-top: 1px solid var(--line);
+        padding: 18px 0 4px;
+        color: #97978f;
+        font-size: 12px;
+      }
+      .model-status {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 10px;
+        color: var(--muted);
+        margin-top: 12px;
+      }
+      .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #c5a24c;
+      }
+      .dot.ready {
+        background: #6d956d;
+      }
+      .dot.error {
+        background: var(--accent);
+      }
+      .scan-panel {
+        padding-left: 27px;
+        padding-right: 27px;
+      }
+      .scan-intro {
+        margin: 8px 0 21px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.55;
+      }
+      .source-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border-bottom: 1px solid var(--line);
+        margin-bottom: 16px;
+      }
+      .source-tab {
+        border: 0;
+        background: transparent;
+        border-bottom: 2px solid transparent;
+        color: var(--muted);
+        padding: 10px 5px 11px;
+        font-size: 11px;
+        font-weight: 650;
+      }
+      .source-tab.active {
+        color: var(--ink);
+        border-color: var(--accent);
+      }
+      .source-area {
+        min-height: 144px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f6f5f0;
+        position: relative;
+        overflow: hidden;
+      }
+      .source-empty {
+        text-align: center;
+        padding: 18px;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.6;
+      }
+      .source-empty svg {
+        width: 24px;
+        height: 24px;
+        color: #98988f;
+        display: block;
+        margin: 0 auto 8px;
+      }
+      .source-preview {
+        display: none;
+        width: 100%;
+        height: 188px;
+        object-fit: cover;
+      }
+      .camera-view {
+        display: none;
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+        transform: scaleX(-1);
+        background: #242522;
+      }
+      .camera-tools {
+        display: none;
+        position: absolute;
+        bottom: 10px;
+        left: 0;
+        right: 0;
+        justify-content: center;
+        gap: 8px;
+      }
+      .camera-tools button {
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        background: rgba(25, 25, 25, 0.74);
+        color: white;
+        padding: 9px 13px;
+        font-size: 11px;
+      }
+      .action-row {
+        display: flex;
+        gap: 9px;
+        margin-top: 12px;
+      }
+      .button {
+        min-height: 41px;
+        border: 1px solid var(--line);
+        padding: 0 14px;
+        font-size: 11px;
+        font-weight: 650;
+        background: var(--white);
+        color: var(--ink);
+        transition:
+          transform 0.15s,
+          background 0.15s;
+      }
+      .button:hover:not(:disabled) {
+        transform: translateY(-1px);
+      }
+      .button-primary {
+        border-color: var(--ink);
+        color: white;
+        background: var(--ink);
+        flex: 1;
+      }
+      .button-primary:hover:not(:disabled) {
+        background: #383a36;
+      }
+      .button:disabled {
+        cursor: not-allowed;
+        opacity: 0.46;
+      }
+      .consent {
+        margin: 15px 0 0;
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        color: #62635d;
+        font-size: 10px;
+        line-height: 1.5;
+      }
+      .consent input {
+        accent-color: var(--accent);
+        margin: 1px 0 0;
+        flex: none;
+      }
+      .message {
+        min-height: 18px;
+        margin: 10px 0 0;
+        color: var(--muted);
+        font-size: 10px;
+        line-height: 1.5;
+      }
+      .message.error {
+        color: #a1412d;
+      }
+      .message.success {
+        color: var(--green);
+      }
+      .results {
+        margin-top: 18px;
+        border-top: 1px solid var(--line);
+        padding-top: 16px;
+        display: none;
+      }
+      .results.visible {
+        display: block;
+      }
+      .results-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 10px;
+        margin-bottom: 11px;
+      }
+      .results-top h3 {
+        margin: 0;
+        font: 400 19px var(--serif);
+      }
+      .results-top span {
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .result-list {
+        display: grid;
+        gap: 8px;
+      }
+      .result-item {
+        display: grid;
+        grid-template-columns: 76px 1fr;
+        gap: 11px;
+        padding: 7px;
+        border: 1px solid var(--line);
+        background: #fff;
+      }
+      .result-item img {
+        width: 76px;
+        height: 62px;
+        object-fit: cover;
+        background: #eee;
+      }
+      .result-meta {
+        align-self: center;
+        min-width: 0;
+      }
+      .result-meta strong {
+        display: block;
+        font-size: 11px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .result-meta small {
+        display: block;
+        margin-top: 5px;
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .empty-result {
+        padding: 12px;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.5;
+        background: #f6f5f0;
+      }
+      .privacy-foot {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        max-width: 760px;
+        margin: 21px 0 0;
+        color: var(--muted);
+        font-size: 10px;
+        line-height: 1.65;
+      }
+      .privacy-foot svg {
+        width: 15px;
+        height: 15px;
+        flex: none;
+        margin-top: 1px;
+        color: var(--green);
+      }
+      footer {
+        border-top: 1px solid var(--line);
+        padding: 17px 0 24px;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        color: #8b8b84;
+        font-size: 10px;
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      @media (max-width: 850px) {
+        .workspace {
+          grid-template-columns: 1fr;
+        }
+        .panel + .panel {
+          border-left: 0;
+          border-top: 1px solid var(--line);
+        }
+        .scan-panel {
+          padding-left: 28px;
+        }
+      }
+      @media (max-width: 560px) {
+        .shell {
+          width: calc(100% - 28px);
+        }
+        header {
+          height: 64px;
+        }
+        .header-right > span:first-child {
+          display: none;
+        }
+        main {
+          padding: 30px 0 38px;
+        }
+        .intro {
+          display: block;
+          margin-bottom: 21px;
+        }
+        .intro-copy {
+          margin-top: 12px;
+        }
+        .panel {
+          padding: 21px 17px 24px;
+        }
+        .scan-panel {
+          padding-left: 17px;
+        }
+        .gallery {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        footer {
+          display: block;
+          line-height: 1.8;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header>
+        <a class="brand" href="#" aria-label="Framefind home"
+          ><span class="brand-mark" aria-hidden="true"></span
+          ><span>framefind</span></a
+        >
+        <div class="header-right">
+          <span>Event photo finder</span
+          ><span class="privacy-pill"
+            ><svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path
+                d="M3.5 7V5a4.5 4.5 0 0 1 9 0v2M3 7h10v7H3z"
+                stroke="currentColor"
+                stroke-width="1.2"
+              />
+              <circle cx="8" cy="10.5" r="1" fill="currentColor" /></svg
+            >Private by design</span
+          >
+        </div>
+      </header>
+      <main>
+        <div class="intro">
+          <div>
+            <p class="eyebrow">The moments you were in</p>
+            <h1>Find yourself in the frame.</h1>
+          </div>
+          <p class="intro-copy">
+            Add the event photos, then find your moments with a quick face scan.
+            Your face search stays on this device.
+          </p>
+        </div>
+        <div class="workspace">
+          <section class="panel" aria-labelledby="gallery-title">
+            <div class="panel-head">
+              <div>
+                <p class="panel-kicker">For the photographer</p>
+                <h2 id="gallery-title">Add the photo set</h2>
+              </div>
+              <span class="count" id="photo-count">0 photos</span>
+            </div>
+            <label class="dropzone" id="dropzone" for="gallery-input">
+              <svg
+                class="upload-icon"
+                viewBox="0 0 32 32"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M16 21V5m0 0-6 6m6-6 6 6M6 19v7h20v-7"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              <strong>Drop event photos here</strong
+              ><span
+                >or
+                <button type="button" class="text-button" id="browse-gallery">
+                  browse files
+                </button>
+                · JPG, PNG, WEBP</span
+              >
+              <input
+                class="sr-only"
+                id="gallery-input"
+                type="file"
+                accept="image/*"
+                multiple
+                disabled
+              />
+            </label>
+            <label class="consent organizer-consent"
+              ><input type="checkbox" id="organizer-consent" /><span
+                >I have permission to analyze faces in these event photos. Face
+                descriptors stay in this browser tab.</span
+              ></label
+            >
+            <p class="subtle-note">
+              Photos are analyzed in your browser and kept in this tab only.
+              Nothing is uploaded to a server.
+            </p>
+            <div class="model-status" aria-live="polite">
+              <span class="dot" id="model-dot"></span
+              ><span id="model-status">Preparing the face-matching model…</span>
+            </div>
+            <div class="gallery-head">
+              <h3>Photo set</h3>
+              <button
+                class="plain-button"
+                id="clear-gallery"
+                type="button"
+                hidden
+              >
+                Clear all
+              </button>
+            </div>
+            <div class="gallery" id="gallery" aria-live="polite">
+              <div class="empty-gallery">
+                Your uploaded images will appear here.
+              </div>
+            </div>
+          </section>
+          <section class="panel scan-panel" aria-labelledby="scan-title">
+            <p class="panel-kicker">For guests</p>
+            <h2 id="scan-title">Find my photos</h2>
+            <p class="scan-intro">
+              Choose a clear photo of yourself or use your camera. We’ll look
+              for a match in the event set.
+            </p>
+            <div
+              class="source-buttons"
+              role="tablist"
+              aria-label="Choose a face photo source"
+            >
+              <button
+                class="source-tab active"
+                id="upload-tab"
+                type="button"
+                role="tab"
+                aria-selected="true"
+              >
+                Upload a selfie</button
+              ><button
+                class="source-tab"
+                id="camera-tab"
+                type="button"
+                role="tab"
+                aria-selected="false"
+              >
+                Use camera
+              </button>
+            </div>
+            <div class="source-area" id="source-area">
+              <div class="source-empty" id="source-empty">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle
+                    cx="12"
+                    cy="8"
+                    r="3.5"
+                    stroke="currentColor"
+                    stroke-width="1.4"
+                  />
+                  <path
+                    d="M4.5 20c.7-3.3 3.4-5 7.5-5s6.8 1.7 7.5 5"
+                    stroke="currentColor"
+                    stroke-width="1.4"
+                    stroke-linecap="round"
+                  /></svg
+                >Choose a clear, well-lit photo with one face
+              </div>
+              <img
+                class="source-preview"
+                id="source-preview"
+                alt="Selected face photo preview"
+              />
+              <video
+                class="camera-view"
+                id="camera-view"
+                autoplay
+                playsinline
+                muted
+                aria-label="Live camera preview"
+              ></video>
+              <div class="camera-tools" id="camera-tools">
+                <button type="button" id="capture-camera">Take photo</button
+                ><button type="button" id="stop-camera">Close camera</button>
+              </div>
+            </div>
+            <div class="action-row" id="source-actions">
+              <button class="button" type="button" id="choose-selfie" disabled>
+                Choose photo</button
+              ><button
+                class="button button-primary"
+                type="button"
+                id="start-camera"
+                disabled
+              >
+                Open camera
+              </button>
+            </div>
+            <input
+              class="sr-only"
+              id="selfie-input"
+              type="file"
+              accept="image/*"
+              capture="user"
+            />
+            <label class="consent"
+              ><input type="checkbox" id="consent" /><span
+                >I consent to using my face photo to search this set. My face
+                scan stays in this browser and is cleared when I leave.</span
+              ></label
+            >
+            <div class="action-row">
+              <button
+                class="button button-primary"
+                type="button"
+                id="search-button"
+                disabled
+              >
+                Find my photos
+              </button>
+            </div>
+            <p class="message" id="search-message" aria-live="polite">
+              Add photos and choose your face photo to begin.
+            </p>
+            <div class="results" id="results" aria-live="polite">
+              <div class="results-top">
+                <h3>Your moments</h3>
+                <span id="result-count"></span>
+              </div>
+              <div class="result-list" id="result-list"></div>
+            </div>
+          </section>
+        </div>
+        <p class="privacy-foot">
+          <svg viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <path
+              d="M9 2 14 4v4.5c0 3.2-2.1 5.7-5 7.5-2.9-1.8-5-4.3-5-7.5V4l5-2Z"
+              stroke="currentColor"
+              stroke-width="1.3"
+            />
+            <path
+              d="m6.5 8.8 1.6 1.6 3.5-3.6"
+              stroke="currentColor"
+              stroke-width="1.3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            /></svg
+          ><span
+            ><strong>Privacy note:</strong> this is a local prototype. Photos
+            and face descriptors stay in memory in this browser tab; only the
+            face-matching code and model are downloaded from a CDN. There is no
+            shared gallery, account system, or server storage yet.</span
+          >
+        </p>
+      </main>
+      <footer>
+        <span>FRAMEFIND · A private way back to the moment</span
+        ><span>Local prototype · Photos clear when you close this tab</span>
+      </footer>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/dist/face-api.js"></script>
+    <script type="module">
+      import { findMatches } from "./src/matching.mjs";
+
+      document.title = "Framefind — photos, found";
+      const MODEL_URL =
+        "https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/model";
+      const photoRecords = [];
+      let modelReady = false;
+      let galleryBusy = false;
+      let galleryVersion = 0;
+      let referenceDescriptor = null;
+      let referenceUrl = null;
+      let cameraStream = null;
+      let sourceMode = "upload";
+
+      const $ = (id) => document.getElementById(id);
+      const galleryInput = $("gallery-input");
+      const galleryEl = $("gallery");
+      const selfieInput = $("selfie-input");
+      const searchButton = $("search-button");
+      const consent = $("consent");
+      const organizerConsent = $("organizer-consent");
+      const message = $("search-message");
+      const sourcePreview = $("source-preview");
+      const cameraView = $("camera-view");
+
+      function setMessage(text, kind = "") {
+        message.textContent = text;
+        message.className = `message${kind ? ` ${kind}` : ""}`;
+      }
+
+      function setModelState(text, kind = "") {
+        $("model-status").textContent = text;
+        $("model-dot").className = `dot${kind ? ` ${kind}` : ""}`;
+      }
+
+      function updateSearchState() {
+        $("choose-selfie").disabled = !consent.checked;
+        $("start-camera").disabled = !consent.checked;
+        searchButton.disabled = !(
+          modelReady &&
+          !galleryBusy &&
+          photoRecords.length &&
+          referenceDescriptor &&
+          consent.checked
+        );
+      }
+
+      async function loadModels() {
+        try {
+          if (!window.faceapi)
+            throw new Error(
+              "Face matching library did not load. Check your connection and reload.",
+            );
+          await Promise.all([
+            faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+            faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+            faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+          ]);
+          document.title = "Framefind — photos, found";
+          modelReady = true;
+          setModelState("Face matching ready on this device", "ready");
+        } catch (error) {
+          setModelState("Could not load face matching", "error");
+          setMessage(
+            error.message ||
+              "Could not load the face model. Check your connection and reload.",
+            "error",
+          );
+        }
+        updateSearchState();
+      }
+
+      function setGalleryCount() {
+        $("photo-count").textContent =
+          `${photoRecords.length} ${photoRecords.length === 1 ? "photo" : "photos"}`;
+        $("clear-gallery").hidden = photoRecords.length === 0;
+      }
+
+      function clearGallery() {
+        galleryVersion += 1;
+        galleryBusy = false;
+        photoRecords.forEach((photo) => URL.revokeObjectURL(photo.url));
+        photoRecords.length = 0;
+        setGalleryCount();
+        renderGallery();
+        $("results").classList.remove("visible");
+        updateSearchState();
+      }
+
+      function renderGallery() {
+        galleryEl.replaceChildren();
+        if (!photoRecords.length) {
+          const empty = document.createElement("div");
+          empty.className = "empty-gallery";
+          empty.textContent = "Your uploaded images will appear here.";
+          galleryEl.append(empty);
+        }
+        for (const record of photoRecords) {
+          const card = document.createElement("div");
+          card.className = "photo-card";
+          const image = document.createElement("img");
+          image.src = record.url;
+          image.alt = record.file.name;
+          const label = document.createElement("div");
+          label.className = "photo-label";
+          const name = document.createElement("span");
+          name.textContent = record.file.name;
+          const faces = document.createElement("span");
+          faces.textContent =
+            record.status === "processing"
+              ? "Scanning…"
+              : record.status === "error"
+                ? "Could not scan"
+                : `${record.faces.length} ${record.faces.length === 1 ? "face" : "faces"}`;
+          label.append(name, faces);
+          card.append(image, label);
+          galleryEl.append(card);
+        }
+      }
+
+      async function scanImage(image) {
+        const results = await faceapi
+          .detectAllFaces(
+            image,
+            new faceapi.TinyFaceDetectorOptions({
+              inputSize: 416,
+              scoreThreshold: 0.45,
+            }),
+          )
+          .withFaceLandmarks()
+          .withFaceDescriptors();
+        return results.map((result) => Array.from(result.descriptor));
+      }
+
+      async function addGalleryFiles(files) {
+        if (!organizerConsent.checked) {
+          setMessage(
+            "Please confirm you have permission to analyze faces in this photo set.",
+            "error",
+          );
+          return;
+        }
+        const images = Array.from(files).filter((file) =>
+          file.type.startsWith("image/"),
+        );
+        if (!images.length) return;
+        galleryBusy = true;
+        const batchVersion = galleryVersion;
+        setMessage("Reading event photos on this device…");
+        for (const file of images) {
+          if (!organizerConsent.checked || batchVersion !== galleryVersion)
+            break;
+          const record = {
+            id: `${Date.now()}-${Math.random()}`,
+            file,
+            url: URL.createObjectURL(file),
+            faces: [],
+            status: "processing",
+          };
+          photoRecords.push(record);
+          setGalleryCount();
+          renderGallery();
+          try {
+            if (!modelReady) await modelsPromise;
+            const image = new Image();
+            image.src = record.url;
+            await image.decode();
+            record.faces = await scanImage(image);
+            record.status = "done";
+          } catch (error) {
+            record.status = "error";
+            record.error = error.message;
+          }
+          if (!organizerConsent.checked || batchVersion !== galleryVersion) {
+            const index = photoRecords.indexOf(record);
+            if (index !== -1) photoRecords.splice(index, 1);
+            URL.revokeObjectURL(record.url);
+            record.faces = [];
+            break;
+          }
+          renderGallery();
+        }
+        if (batchVersion === galleryVersion) galleryBusy = false;
+        if (batchVersion !== galleryVersion) return;
+        if (photoRecords.some((photo) => photo.status === "error"))
+          setMessage(
+            "Some images could not be analyzed. Try smaller JPG or PNG files.",
+            "error",
+          );
+        else
+          setMessage(
+            `Analyzed ${photoRecords.length} ${photoRecords.length === 1 ? "photo" : "photos"} in this browser.`,
+            "success",
+          );
+        updateSearchState();
+      }
+
+      function showReferencePreview(url) {
+        sourcePreview.src = url;
+        sourcePreview.style.display = "block";
+        $("source-empty").style.display = "none";
+        cameraView.style.display = "none";
+        $("camera-tools").style.display = "none";
+      }
+
+      async function setReference(image, url = null) {
+        if (!consent.checked) {
+          if (url) URL.revokeObjectURL(url);
+          setMessage(
+            "Please agree to face matching before choosing or scanning a photo.",
+            "error",
+          );
+          return;
+        }
+        referenceDescriptor = null;
+        $("results").classList.remove("visible");
+        if (referenceUrl) URL.revokeObjectURL(referenceUrl);
+        referenceUrl = url;
+        if (url) showReferencePreview(url);
+        setMessage("Checking for a face…");
+        updateSearchState();
+        try {
+          if (!modelReady) await modelsPromise;
+          const faces = await scanImage(image);
+          if (!consent.checked) return;
+          if (!faces.length)
+            throw new Error(
+              "No face found. Try a clear, front-facing photo with good light.",
+            );
+          if (faces.length > 1)
+            throw new Error(
+              "More than one face found. Please choose a photo with just you.",
+            );
+          referenceDescriptor = faces[0];
+          setMessage("Face scan ready. Search when you’re ready.", "success");
+        } catch (error) {
+          setMessage(
+            error.message || "Could not read that photo. Try another image.",
+            "error",
+          );
+        }
+        updateSearchState();
+      }
+
+      async function handleSelfie(file) {
+        if (!file || !file.type.startsWith("image/")) return;
+        const url = URL.createObjectURL(file);
+        const image = new Image();
+        image.src = url;
+        try {
+          await image.decode();
+          await setReference(image, url);
+        } catch {
+          URL.revokeObjectURL(url);
+          setMessage(
+            "Could not open that image. Please choose another.",
+            "error",
+          );
+        }
+      }
+
+      function stopCamera() {
+        if (cameraStream)
+          cameraStream.getTracks().forEach((track) => track.stop());
+        cameraStream = null;
+        cameraView.srcObject = null;
+        cameraView.style.display = "none";
+        $("camera-tools").style.display = "none";
+        $("source-empty").style.display = referenceDescriptor
+          ? "none"
+          : "block";
+        $("source-actions").style.display = "flex";
+      }
+
+      async function startCamera() {
+        try {
+          if (!navigator.mediaDevices?.getUserMedia)
+            throw new Error(
+              "Camera access requires a secure connection. Open this site on localhost or HTTPS.",
+            );
+          cameraStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "user" },
+            audio: false,
+          });
+          cameraView.srcObject = cameraStream;
+          cameraView.style.display = "block";
+          $("source-empty").style.display = "none";
+          $("source-actions").style.display = "none";
+          $("camera-tools").style.display = "flex";
+          await cameraView.play();
+        } catch (error) {
+          stopCamera();
+          setMessage(
+            error.message ||
+              "Camera access was not available. You can choose a photo instead.",
+            "error",
+          );
+        }
+      }
+
+      function renderResults(matches) {
+        const container = $("result-list");
+        container.replaceChildren();
+        $("results").classList.add("visible");
+        $("result-count").textContent =
+          `${matches.length} ${matches.length === 1 ? "match" : "matches"}`;
+        if (!matches.length) {
+          const empty = document.createElement("div");
+          empty.className = "empty-result";
+          empty.textContent =
+            "No close match in this photo set. Try a brighter, more front-facing face photo.";
+          container.append(empty);
+          return;
+        }
+        for (const match of matches) {
+          const item = document.createElement("div");
+          item.className = "result-item";
+          const image = document.createElement("img");
+          image.src = match.photo.url;
+          image.alt = match.photo.file.name;
+          const meta = document.createElement("div");
+          meta.className = "result-meta";
+          const name = document.createElement("strong");
+          name.textContent = match.photo.file.name;
+          const detail = document.createElement("small");
+          detail.textContent = `Possible match · ${match.photo.faces.length} ${match.photo.faces.length === 1 ? "face" : "faces"} in photo`;
+          meta.append(name, detail);
+          item.append(image, meta);
+          container.append(item);
+        }
+      }
+
+      const modelsPromise = loadModels();
+
+      $("browse-gallery").addEventListener("click", (event) => {
+        event.preventDefault();
+        if (!organizerConsent.checked) {
+          setMessage(
+            "Please confirm you have permission to analyze faces in this photo set.",
+            "error",
+          );
+          return;
+        }
+        galleryInput.click();
+      });
+      $("dropzone").addEventListener("click", (event) => {
+        if (!organizerConsent.checked) {
+          event.preventDefault();
+          setMessage(
+            "Please confirm you have permission to analyze faces in this photo set.",
+            "error",
+          );
+        }
+      });
+      organizerConsent.addEventListener("change", () => {
+        galleryInput.disabled = !organizerConsent.checked;
+        if (!organizerConsent.checked) {
+          clearGallery();
+          setMessage(
+            "Confirm permission before adding photos for face matching.",
+          );
+        }
+      });
+      galleryInput.addEventListener("change", (event) => {
+        addGalleryFiles(event.target.files);
+        event.target.value = "";
+      });
+      $("dropzone").addEventListener("dragover", (event) => {
+        event.preventDefault();
+        $("dropzone").classList.add("dragging");
+      });
+      $("dropzone").addEventListener("dragleave", () =>
+        $("dropzone").classList.remove("dragging"),
+      );
+      $("dropzone").addEventListener("drop", (event) => {
+        event.preventDefault();
+        $("dropzone").classList.remove("dragging");
+        addGalleryFiles(event.dataTransfer.files);
+      });
+      $("clear-gallery").addEventListener("click", clearGallery);
+      $("choose-selfie").addEventListener("click", () => selfieInput.click());
+      selfieInput.addEventListener("change", (event) => {
+        handleSelfie(event.target.files[0]);
+        event.target.value = "";
+      });
+      $("start-camera").addEventListener("click", startCamera);
+      $("stop-camera").addEventListener("click", stopCamera);
+      $("capture-camera").addEventListener("click", async () => {
+        if (!cameraView.videoWidth) return;
+        const canvas = document.createElement("canvas");
+        canvas.width = cameraView.videoWidth;
+        canvas.height = cameraView.videoHeight;
+        canvas.getContext("2d").drawImage(cameraView, 0, 0);
+        stopCamera();
+        showReferencePreview(canvas.toDataURL("image/jpeg", 0.9));
+        await setReference(canvas);
+      });
+      $("upload-tab").addEventListener("click", () => {
+        sourceMode = "upload";
+        $("upload-tab").classList.add("active");
+        $("upload-tab").setAttribute("aria-selected", "true");
+        $("camera-tab").classList.remove("active");
+        $("camera-tab").setAttribute("aria-selected", "false");
+        $("source-actions").style.display = "flex";
+        stopCamera();
+        $("choose-selfie").focus();
+      });
+      $("camera-tab").addEventListener("click", () => {
+        sourceMode = "camera";
+        $("camera-tab").classList.add("active");
+        $("camera-tab").setAttribute("aria-selected", "true");
+        $("upload-tab").classList.remove("active");
+        $("upload-tab").setAttribute("aria-selected", "false");
+        $("source-actions").style.display = "flex";
+        stopCamera();
+        $("start-camera").focus();
+      });
+      consent.addEventListener("change", () => {
+        if (!consent.checked) {
+          referenceDescriptor = null;
+          if (referenceUrl) URL.revokeObjectURL(referenceUrl);
+          referenceUrl = null;
+          sourcePreview.removeAttribute("src");
+          sourcePreview.style.display = "none";
+          $("source-empty").style.display = "block";
+          $("results").classList.remove("visible");
+          stopCamera();
+        }
+        updateSearchState();
+      });
+      searchButton.addEventListener("click", () => {
+        if (!referenceDescriptor || !consent.checked) return;
+        const matches = findMatches(
+          referenceDescriptor,
+          photoRecords.filter((photo) => photo.status === "done"),
+          0.6,
+        );
+        renderResults(matches);
+        setMessage(
+          matches.length
+            ? "Here are the closest matches in this photo set."
+            : "No close face match found in this set.",
+          matches.length ? "success" : "",
+        );
+      });
+      window.addEventListener("beforeunload", stopCamera);
+    </script>
+  </body>
+</html>
