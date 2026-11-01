@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Find my photos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #eef1f5;
+        --panel: #fff;
+        --ink: #1b2430;
+        --mute: #5d6878;
+        --line: #d5dbe5;
+        --acc: #2f4bda;
+        --acc-ink: #fff;
+        --ok: #1a7f4b;
+        --err: #b3261e;
+        color-scheme: light;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #161b24;
+          --panel: #1f2632;
+          --ink: #e8ecf3;
+          --mute: #9aa6b8;
+          --line: #334052;
+          --acc: #7b93ff;
+          --acc-ink: #0f1530;
+          --ok: #5fd596;
+          --err: #ff8a80;
+          color-scheme: dark;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font:
+          16px/1.5 "Bricolage Grotesque",
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+        padding: max(16px, env(safe-area-inset-top)) 16px 48px;
+      }
+      main {
+        max-width: 980px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: clamp(2rem, 6vw, 3.6rem);
+        line-height: 1.02;
+        letter-spacing: -0.03em;
+        font-weight: 800;
+        margin: 28px 0 8px;
+      }
+      h2 {
+        font-size: 1.15rem;
+        margin: 0 0 4px;
+      }
+      p {
+        margin: 0 0 12px;
+        max-width: 62ch;
+      }
+      .mute {
+        color: var(--mute);
+      }
+      .tabs {
+        display: flex;
+        gap: 6px;
+        margin: 20px 0;
+      }
+      .tabs button {
+        background: none;
+        border: 1px solid var(--line);
+        color: var(--mute);
+        padding: 8px 14px;
+        border-radius: 999px;
+        font: inherit;
+        cursor: pointer;
+      }
+      .tabs button[aria-selected="true"] {
+        background: var(--ink);
+        color: var(--bg);
+        border-color: var(--ink);
+      }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 20px;
+        margin-bottom: 16px;
+      }
+      button.cta,
+      label.cta {
+        display: inline-block;
+        background: var(--acc);
+        color: var(--acc-ink);
+        border: 0;
+        border-radius: 10px;
+        padding: 11px 18px;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      button.alt,
+      label.alt {
+        display: inline-block;
+        background: none;
+        color: var(--ink);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px 16px;
+        font: inherit;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      button:focus-visible,
+      label:focus-within,
+      input:focus-visible {
+        outline: 3px solid var(--acc);
+        outline-offset: 2px;
+      }
+      input[type="file"] {
+        position: absolute;
+        opacity: 0;
+        width: 1px;
+        height: 1px;
+      }
+      input[type="text"] {
+        font: inherit;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--bg);
+        color: var(--ink);
+        width: 100%;
+        max-width: 420px;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        margin-top: 12px;
+      }
+      .selfie {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        align-items: flex-start;
+      }
+      .selfie canvas,
+      .selfie video {
+        width: 200px;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 12px;
+        background: var(--bg);
+        border: 1px solid var(--line);
+      }
+      #status,
+      #ostatus {
+        min-height: 1.5em;
+        color: var(--mute);
+        margin-top: 10px;
+      }
+      .err {
+        color: var(--err);
+      }
+      .ok {
+        color: var(--ok);
+      }
+      .grid {
+        columns: 3 220px;
+        column-gap: 12px;
+      }
+      .grid a {
+        display: block;
+        margin: 0 0 12px;
+        break-inside: avoid;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        background: var(--panel);
+      }
+      .grid img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+      .grid span {
+        display: block;
+        padding: 6px 10px;
+        font-size: 0.8rem;
+        color: var(--mute);
+      }
+      progress {
+        width: 100%;
+        max-width: 420px;
+        height: 10px;
+      }
+      input[type="range"] {
+        width: 220px;
+        accent-color: var(--acc);
+      }
+      [hidden] {
+        display: none !important;
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .grid a {
+          transition: transform 0.15s;
+        }
+        .grid a:hover {
+          transform: translateY(-2px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1 id="title">Find my photos</h1>
+      <p class="mute">
+        Take or upload a selfie and see every photo from the event you appear
+        in. Your selfie stays on your device.
+      </p>
+
+      <div class="tabs" role="tablist">
+        <button role="tab" id="t-guest" aria-selected="true">
+          Find my photos
+        </button>
+        <button role="tab" id="t-org" aria-selected="false">Organizer</button>
+      </div>
+
+      <!-- GUEST -->
+      <section id="guest">
+        <div class="panel">
+          <h2>Your face</h2>
+          <p class="mute">
+            Face the camera in good light, without sunglasses or a mask.
+          </p>
+          <div class="selfie">
+            <canvas
+              id="preview"
+              width="400"
+              height="400"
+              aria-label="Your selfie"
+            ></canvas>
+            <video id="cam" autoplay playsinline muted hidden></video>
+            <div>
+              <div class="row" style="margin-top: 0">
+                <button class="cta" id="camBtn">Use camera</button>
+                <button class="cta" id="snapBtn" hidden>Take photo</button>
+                <label class="alt"
+                  >Upload a picture<input
+                    type="file"
+                    id="selfieFile"
+                    accept="image/*"
+                /></label>
+              </div>
+              <div class="row">
+                <label for="thr">Match strictness</label>
+                <input
+                  type="range"
+                  id="thr"
+                  min="0.35"
+                  max="0.65"
+                  step="0.01"
+                  value="0.5"
+                />
+                <span class="mute" id="thrLbl">Balanced</span>
+              </div>
+            </div>
+          </div>
+          <div id="status" aria-live="polite"></div>
+        </div>
+        <div id="results"></div>
+      </section>
+
+      <!-- ORGANIZER -->
+      <section id="org" hidden>
+        <div class="panel">
+          <h2>1. Scan your event photos</h2>
+          <p class="mute">
+            Choose all the photos. Faces are detected in your browser; nothing
+            is uploaded anywhere.
+          </p>
+          <input
+            type="text"
+            id="evName"
+            placeholder="Event name, e.g. Grade 12 Recognition Day"
+            aria-label="Event name"
+          />
+          <div class="row">
+            <label class="cta"
+              >Choose photos<input
+                type="file"
+                id="photoFiles"
+                accept="image/*"
+                multiple
+            /></label>
+            <button class="alt" id="scanBtn" disabled>Scan photos</button>
+          </div>
+          <div class="row">
+            <progress id="prog" value="0" max="1" hidden></progress>
+          </div>
+          <div id="ostatus" aria-live="polite"></div>
+        </div>
+        <div class="panel">
+          <h2>2. Publish</h2>
+          <p>
+            Download <b>index.json</b>. Then put these on any static host
+            (Netlify Drop, GitHub Pages, school server):
+          </p>
+          <p class="mute">
+            • this <b>index.html</b><br />• <b>index.json</b><br />• a folder
+            named <b>photos</b> containing the same image files you scanned,
+            with the same file names
+          </p>
+          <button class="cta" id="dlBtn" disabled>Download index.json</button>
+        </div>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js"></script>
+    <script>
+      const MODELS =
+        "https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model/";
+      const $ = (id) => document.getElementById(id);
+      let ready,
+        index = null,
+        selfieDesc = null,
+        stream = null,
+        built = null;
+
+      function models(say) {
+        return (ready ||= (async () => {
+          say("Loading face models (one time, about 8 MB)…");
+          await faceapi.nets.ssdMobilenetv1.loadFromUri(MODELS);
+          await faceapi.nets.faceLandmark68Net.loadFromUri(MODELS);
+          await faceapi.nets.faceRecognitionNet.loadFromUri(MODELS);
+        })());
+      }
+      const opts = () =>
+        new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 });
+      const detect = (src) =>
+        faceapi
+          .detectAllFaces(src, opts())
+          .withFaceLandmarks()
+          .withFaceDescriptors();
+
+      async function toCanvas(blob, max) {
+        const bmp = await createImageBitmap(blob, {
+          imageOrientation: "from-image",
+        });
+        const s = Math.min(1, max / Math.max(bmp.width, bmp.height));
+        const c = document.createElement("canvas");
+        c.width = Math.round(bmp.width * s);
+        c.height = Math.round(bmp.height * s);
+        c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+        bmp.close && bmp.close();
+        return c;
+      }
+      function setStatus(el, msg, cls) {
+        el.textContent = msg;
+        el.className = cls || "";
+      }
+
+      /* tabs */
+      function tab(which) {
+        $("guest").hidden = which !== "guest";
+        $("org").hidden = which !== "org";
+        $("t-guest").setAttribute("aria-selected", which === "guest");
+        $("t-org").setAttribute("aria-selected", which === "org");
+      }
+      $("t-guest").onclick = () => tab("guest");
+      $("t-org").onclick = () => tab("org");
+
+      /* ---------- guest ---------- */
+      const status = $("status");
+      (async () => {
+        try {
+          const r = await fetch("index.json", { cache: "no-cache" });
+          if (!r.ok) throw 0;
+          index = await r.json();
+          if (index.event) {
+            $("title").textContent = index.event;
+            document.title = index.event + " – Find my photos";
+          }
+        } catch (e) {
+          setStatus(
+            status,
+            "No event photos found yet. Organizers: open the Organizer tab to scan photos and create index.json. (This page must be served over http/https, not opened as a file.)",
+            "err",
+          );
+        }
+      })();
+
+      $("camBtn").onclick = async () => {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "user" },
+          });
+          $("cam").srcObject = stream;
+          $("cam").hidden = false;
+          $("preview").hidden = true;
+          $("snapBtn").hidden = false;
+          $("camBtn").hidden = true;
+        } catch (e) {
+          setStatus(
+            status,
+            "Camera unavailable. Allow camera access, or upload a picture instead.",
+            "err",
+          );
+        }
+      };
+      $("snapBtn").onclick = async () => {
+        const v = $("cam"),
+          c = $("preview"),
+          g = c.getContext("2d");
+        const s = Math.min(v.videoWidth, v.videoHeight);
+        g.drawImage(
+          v,
+          (v.videoWidth - s) / 2,
+          (v.videoHeight - s) / 2,
+          s,
+          s,
+          0,
+          0,
+          c.width,
+          c.height,
+        );
+        stream.getTracks().forEach((t) => t.stop());
+        v.hidden = true;
+        c.hidden = false;
+        $("snapBtn").hidden = true;
+        $("camBtn").hidden = false;
+        analyseSelfie(c);
+      };
+      $("selfieFile").onchange = async (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+        const c = await toCanvas(f, 800);
+        const p = $("preview"),
+          g = p.getContext("2d");
+        const s = Math.min(c.width, c.height);
+        g.drawImage(
+          c,
+          (c.width - s) / 2,
+          (c.height - s) / 2,
+          s,
+          s,
+          0,
+          0,
+          p.width,
+          p.height,
+        );
+        analyseSelfie(c);
+      };
+      async function analyseSelfie(src) {
+        selfieDesc = null;
+        $("results").innerHTML = "";
+        try {
+          await models((m) => setStatus(status, m));
+          setStatus(status, "Looking for your face…");
+          const faces = await detect(src);
+          if (!faces.length)
+            return setStatus(
+              status,
+              "No face found. Try again with your face centered and well lit.",
+              "err",
+            );
+          faces.sort((a, b) => b.detection.box.area - a.detection.box.area);
+          selfieDesc = faces[0].descriptor;
+          if (faces.length > 1)
+            setStatus(status, "Several faces found; using the largest one.");
+          render();
+        } catch (e) {
+          setStatus(
+            status,
+            "Could not load the face models. Check your connection and reload.",
+            "err",
+          );
+        }
+      }
+      $("thr").oninput = () => {
+        const v = +$("thr").value;
+        $("thrLbl").textContent =
+          v < 0.43 ? "Strict" : v > 0.56 ? "Loose" : "Balanced";
+        render();
+      };
+
+      function render() {
+        const out = $("results");
+        if (!selfieDesc || !index) return;
+        const thr = +$("thr").value;
+        const hits = [];
+        for (const p of index.photos) {
+          let best = 9;
+          for (const f of p.faces) {
+            const d = faceapi.euclideanDistance(selfieDesc, f);
+            if (d < best) best = d;
+          }
+          if (best <= thr) hits.push({ file: p.file, d: best });
+        }
+        hits.sort((a, b) => a.d - b.d);
+        out.innerHTML = "";
+        if (!hits.length) {
+          setStatus(
+            status,
+            "No matches. Try the strictness slider set to Loose, or use a clearer picture.",
+            "err",
+          );
+          return;
+        }
+        setStatus(
+          status,
+          hits.length +
+            (hits.length === 1 ? " photo" : " photos") +
+            " of you found.",
+          "ok",
+        );
+        const grid = document.createElement("div");
+        grid.className = "grid";
+        for (const h of hits) {
+          const a = document.createElement("a");
+          a.href = "photos/" + encodeURIComponent(h.file);
+          a.target = "_blank";
+          a.rel = "noopener";
+          const im = document.createElement("img");
+          im.loading = "lazy";
+          im.src = a.href;
+          im.alt = "Event photo " + h.file;
+          a.append(im);
+          grid.append(a);
+        }
+        out.append(grid);
+      }
+
+      /* ---------- organizer ---------- */
+      let files = [];
+      const ost = $("ostatus");
+      $("photoFiles").onchange = (e) => {
+        files = [...e.target.files];
+        $("scanBtn").disabled = !files.length;
+        setStatus(ost, files.length + " photos selected.");
+      };
+      $("scanBtn").onclick = async () => {
+        $("scanBtn").disabled = true;
+        $("dlBtn").disabled = true;
+        const prog = $("prog");
+        prog.hidden = false;
+        prog.max = files.length;
+        prog.value = 0;
+        try {
+          await models((m) => setStatus(ost, m));
+        } catch (e) {
+          setStatus(
+            ost,
+            "Could not load the face models. Check your connection and retry.",
+            "err",
+          );
+          $("scanBtn").disabled = false;
+          return;
+        }
+        const photos = [];
+        let nFaces = 0,
+          noFace = 0;
+        for (let i = 0; i < files.length; i++) {
+          setStatus(
+            ost,
+            `Scanning ${i + 1} of ${files.length}: ${files[i].name}`,
+          );
+          try {
+            const c = await toCanvas(files[i], 1600);
+            const faces = await detect(c);
+            photos.push({
+              file: files[i].name,
+              faces: faces.map((f) =>
+                Array.from(f.descriptor, (x) => +x.toFixed(4)),
+              ),
+            });
+            nFaces += faces.length;
+            if (!faces.length) noFace++;
+          } catch (e) {
+            photos.push({ file: files[i].name, faces: [] });
+            noFace++;
+          }
+          prog.value = i + 1;
+          await new Promise((r) => setTimeout(r));
+        }
+        built = { event: $("evName").value.trim() || "Event photos", photos };
+        setStatus(
+          ost,
+          `Done: ${nFaces} faces in ${photos.length} photos (${noFace} with no face found).`,
+          "ok",
+        );
+        $("dlBtn").disabled = false;
+        $("scanBtn").disabled = false;
+      };
+      $("dlBtn").onclick = () => {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(
+          new Blob([JSON.stringify(built)], { type: "application/json" }),
+        );
+        a.download = "index.json";
+        a.click();
+        URL.revokeObjectURL(a.href);
+      };
+    </script>
+  </body>
+</html>
